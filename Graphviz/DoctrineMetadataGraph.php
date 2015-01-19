@@ -21,7 +21,8 @@ class DoctrineMetadataGraph extends Digraph
         parent::__construct('G');
 
         $this->options = array_merge(array(
-            'no-fields' => false,
+            'no-fields'       => false,
+            'no-associations' => false,
         ), $options);
 
         $this->attr('node', array(
@@ -35,6 +36,7 @@ class DoctrineMetadataGraph extends Digraph
 
         foreach ($data['entities'] as $class => $entity) {
             $clusterName = $this->getCluster($class);
+
             if (!isset($clusters[$clusterName])) {
                 $clusters[$clusterName] = $this->subgraph('cluster_'.$clusterName)
                     ->set('label', $clusterName)
@@ -73,7 +75,10 @@ class DoctrineMetadataGraph extends Digraph
     {
         $data = array('entities' => array(), 'relations' => array());
         $passes = array(
-            new ImportMetadataPass(array('no-fields' => $this->options['no-fields'])),
+            new ImportMetadataPass(array(
+                'no-fields'       => $this->options['no-fields'],
+                'no-associations' => $this->options['no-associations'],
+            )),
             new InheritancePass(),
             new ShortNamePass()
         );
@@ -90,8 +95,10 @@ class DoctrineMetadataGraph extends Digraph
         $class = str_replace('\\', '\\\\', $class); // needed because of type "record"
         $result = '{{<__class__> '.$class.'|';
 
-        foreach ($entity['associations'] as $name => $val) {
-            $result .= '<'.$name.'> '.$name.' : '.$val.'\l|';
+        if (!$this->options['no-associations']) {
+            foreach ($entity['associations'] as $name => $val) {
+                $result .= '<'.$name.'> '.$name.' : '.$val.'\l|';
+            }
         }
 
         foreach ($entity['fields'] as $name => $val) {
@@ -108,7 +115,9 @@ class DoctrineMetadataGraph extends Digraph
         $exp = explode(':', $entityName);
 
         if (count($exp) !== 2) {
-            throw new \OutOfBoundsException('Unexpected count of ":" in entity name. Expected one ("AcmeDemoBundle:User"), got %s ("%s").', count($exp), $entityName);
+            $exp = explode('\\', $entityName);
+
+            return array_pop($exp);
         }
 
         return $exp[0];

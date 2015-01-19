@@ -12,7 +12,8 @@ class ImportMetadataPass
     public function __construct(array $options = array())
     {
         $this->options = array_merge(array(
-            'no-fields' => false,
+            'no-fields'       => false,
+            'no-associations' => false,
         ), $options);
     }
 
@@ -66,7 +67,11 @@ class ImportMetadataPass
                     continue;
                 }
 
-                $from = array($mapping['sourceEntity'], $field);
+                if ($this->options['no-associations']) {
+                    $from = array($mapping['sourceEntity'], '__class__');
+                } else {
+                    $from = array($mapping['sourceEntity'], $field);
+                }
                 $to   = array($mapping['targetEntity'], '__class__');
 
                 foreach ($data['relations'] as $relation) {

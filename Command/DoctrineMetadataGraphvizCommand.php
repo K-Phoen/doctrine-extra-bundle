@@ -24,6 +24,7 @@ class DoctrineMetadataGraphvizCommand extends ContainerAwareCommand
         $this
             ->setName('doctrine:mapping:graphviz')
             ->addOption('no-fields', null, InputOption::VALUE_NONE, 'If defined, fields aren\'t included in the graph.')
+            ->addOption('no-associations', null, InputOption::VALUE_NONE, 'If defined, association fields aren\'t included in the graph.')
         ;
     }
 
@@ -34,7 +35,8 @@ class DoctrineMetadataGraphvizCommand extends ContainerAwareCommand
     {
         $em = $this->getContainer()->get('doctrine')->getManager();
         $graph = new DoctrineMetadataGraph($em, array(
-            'no-fields' => $input->getOption('no-fields')
+            'no-fields'       => $input->getOption('no-fields'),
+            'no-associations' => $input->getOption('no-associations'),
         ));
 
         $output->writeln($graph->render());
