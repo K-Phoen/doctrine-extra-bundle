@@ -112,14 +112,9 @@ class DoctrineMetadataGraph extends Digraph
 
     private function getCluster($entityName)
     {
-        $exp = explode(':', $entityName);
+        $exp = preg_split('/\\\\|:/', $entityName);
+        $name = array_pop($exp);
 
-        if (count($exp) !== 2) {
-            $exp = explode('\\', $entityName);
-
-            return array_pop($exp);
-        }
-
-        return $exp[0];
+        return implode('_', $exp);
     }
 }
